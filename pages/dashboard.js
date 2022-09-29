@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { Axios } from "axios";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
@@ -10,8 +10,12 @@ export default function DashboardPage() {
   const router = useRouter();
 
   const callGetTodo = async () => {
+    const token = localStorage.getItem("token");
     try {
       const resp = await axios.get("/api/todo");
+      headers: {
+        Authorization;
+      }
       if (resp.data.ok) setTodos(resp.data.todolist);
     } catch (err) {
       console.log(err.response.data.mesasge);
@@ -19,11 +23,18 @@ export default function DashboardPage() {
   };
 
   const callPostTodo = async () => {
+    const token = localStorage.getItem("token");
     try {
-      const resp = await axios.post("/api/todo", {
-        title: todoText,
-        completed: false,
-      });
+      const resp = await axios.post(
+        "/api/todo",
+        {
+          title: todoText,
+          completed: false,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       if (resp.data.ok) await callGetTodo();
     } catch (err) {
       alert(err.response.data.message);
@@ -54,6 +65,24 @@ export default function DashboardPage() {
     callGetTodo();
   }, []);
 
+  const callUserTestToken = async () => {
+    const token = localStorage.getItem("token");
+    try {
+      const resp = await axios.get("/api/user/testToken", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (resp.data.ok) {
+        setUsername(resp.data.username);
+        callGetTodo();
+      }
+    } catch (err) {
+      alert(err.response.data.message);
+    }
+  };
+
+  useEffect(() => {
+    callUserTestToken();
+  }, []);
   return (
     <div>
       <input
